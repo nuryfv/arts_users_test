@@ -8,12 +8,16 @@ class CreateUsersTable extends Migration
 {
     public function up(): void
     {
+        // PostgreSQL no tiene enteros sin signo; ahi la clave primaria se
+        // crea como SERIAL y el modificador sobra.
+        $id = ['type' => 'INT', 'auto_increment' => true];
+
+        if ($this->db->DBDriver !== 'Postgre') {
+            $id['unsigned'] = true;
+        }
+
         $this->forge->addField([
-            'id' => [
-                'type'           => 'INT',
-                'unsigned'       => true,
-                'auto_increment' => true,
-            ],
+            'id' => $id,
             'first_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 50,
@@ -51,15 +55,25 @@ class CreateUsersTable extends Migration
         $this->forge->createTable('users');
 
         // El rango de `age` se fuerza tambien en la propia base de datos.
-        // Solo en MySQL 8.0.16 o superior: en SQLite (la conexion que usan
-        // los tests) no existe ALTER TABLE ... ADD CONSTRAINT, y ahi queda
-        // vigente la validacion del modelo.
-        if ($this->db->DBDriver === 'MySQLi') {
+        // MySQL lo admite desde 8.0.16 y PostgreSQL siempre; SQLite (la
+        // conexion de los tests) no tiene ALTER TABLE ... ADD CONSTRAINT y
+        // ahi queda vigente solo la validacion del modelo.
+        $delimitadores = [
+            'MySQLi'  => '`',
+            'Postgre' => '"',
+        ];
+
+        $comilla = $delimitadores[$this->db->DBDriver] ?? null;
+
+        if ($comilla !== null) {
             $tabla = $this->db->prefixTable('users');
 
-            $this->db->query(
-                "ALTER TABLE `{$tabla}` ADD CONSTRAINT `users_age_range` CHECK (`age` >= 0 AND `age` <= 125)"
-            );
+            $this->db->query(sprintf(
+                'ALTER TABLE %1$s%2$s%1$s ADD CONSTRAINT %1$susers_age_range%1$s'
+                . ' CHECK (%1$sage%1$s >= 0 AND %1$sage%1$s <= 125)',
+                $comilla,
+                $tabla,
+            ));
         }
     }
 

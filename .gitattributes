@@ -1,0 +1,13 @@
+# Normaliza los finales de linea para que el repositorio sea igual en
+# Windows, Linux y macOS.
+* text=auto eol=lf
+
+# Los scripts que se ejecutan dentro de contenedores Linux deben
+# conservar finales LF aunque se editen en Windows.
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Binarios: sin conversion.
+*.png binary
+*.jpg binary
+*.svg text eol=lf

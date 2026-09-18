@@ -150,8 +150,86 @@ cd frontend
 npx tsc -b
 ```
 
+## Despliegue
+
+El reparto es: **interfaz en Vercel**, **API en Render o Railway** y **base de
+datos en Supabase**. Vercel no ejecuta PHP, por eso el backend va aparte.
+
+### Base de datos (Supabase)
+
+Supabase es PostgreSQL, así que el backend se conecta con el driver `Postgre`.
+En el panel de Supabase, la cadena de conexión está en *Project Settings >
+Database*. Con el *Session pooler* los valores son de esta forma:
+
+```ini
+database.default.hostname = aws-0-<region>.pooler.supabase.com
+database.default.database = postgres
+database.default.username = postgres.<referencia-del-proyecto>
+database.default.password = <tu-contraseña>
+database.default.DBDriver = Postgre
+database.default.port     = 5432
+database.default.schema   = public
+```
+
+Las migraciones se aplican igual que en local:
+
+```bash
+php spark migrate
+php spark db:seed UserSeeder
+```
+
+### API (Render o Railway)
+
+El backend incluye `Dockerfile`, así que ambos proveedores sirven sin cambios:
+se crea un servicio de tipo Docker apuntando al directorio `backend` de este
+repositorio.
+
+Variables de entorno del servicio:
+
+| Variable | Valor |
+|---|---|
+| `CI_ENVIRONMENT` | `production` |
+| `app.baseURL` | la URL pública que asigne el proveedor |
+| `cors.allowedOrigins` | el dominio de Vercel, p. ej. `https://arts-users-test.vercel.app` |
+| `database.default.*` | los valores de Supabase de la tabla anterior |
+| `RUN_MIGRATIONS` | `true` en el primer despliegue, para crear la tabla |
+| `RUN_SEED` | `true` solo si quieres cargar los 12 usuarios de ejemplo |
+
+`cors.allowedOrigins` admite varios dominios separados por comas. Si no se
+define, se usan los orígenes de desarrollo de `app/Config/Cors.php`.
+
+Conviene poner `RUN_MIGRATIONS` y `RUN_SEED` en `false` después del primer
+despliegue: las migraciones ya aplicadas no se repiten, pero así el arranque es
+más rápido.
+
+### Interfaz (Vercel)
+
+Al importar el repositorio hay que indicar:
+
+- **Root Directory**: `frontend`
+- **Framework Preset**: Vite (lo detecta solo)
+- **Variable de entorno**: `VITE_API_URL` con la URL pública de la API más
+  `/api`, por ejemplo `https://arts-users-test.onrender.com/api`
+
+Esa variable se lee en tiempo de compilación, así que **hay que volver a
+desplegar** en Vercel cada vez que cambie.
+
+### Orden recomendado
+
+1. Crear la base en Supabase y anotar la cadena de conexión.
+2. Desplegar la API con `RUN_MIGRATIONS=true` y comprobar que responde en
+   `/api/health`.
+3. Desplegar la interfaz en Vercel con `VITE_API_URL` apuntando a esa API.
+4. Añadir el dominio de Vercel a `cors.allowedOrigins` en el servicio de la API
+   y volver a desplegarla.
+
+El paso 4 es fácil de olvidar: sin él, el navegador bloquea las peticiones por
+CORS aunque la API funcione perfectamente al llamarla directamente.
+
 ## Seguridad
 
 La API **no tiene autenticación**: cualquiera con acceso al puerto puede listar,
-modificar o eliminar usuarios. Antes de exponerla fuera de un entorno local hay
-que añadir una capa de autenticación.
+modificar o eliminar usuarios. Esto es aceptable en local, pero **una vez
+desplegada queda abierta a Internet**: cualquiera que encuentre la URL puede
+leer, modificar o borrar los registros. Antes de dejarla publicada de forma
+permanente hay que añadir una capa de autenticación.

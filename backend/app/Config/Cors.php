@@ -12,6 +12,25 @@ use CodeIgniter\Config\BaseConfig;
 class Cors extends BaseConfig
 {
     /**
+     * Permite fijar los origenes desde el entorno, que es como se configura
+     * en produccion (el dominio que asigne Vercel). Se escriben separados
+     * por comas en la variable `cors.allowedOrigins`; si no esta definida,
+     * se mantienen los valores de desarrollo de mas abajo.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $origenes = env('cors.allowedOrigins');
+
+        if (is_string($origenes) && trim($origenes) !== '') {
+            $this->default['allowedOrigins'] = array_values(array_filter(
+                array_map(trim(...), explode(',', $origenes)),
+            ));
+        }
+    }
+
+    /**
      * The default CORS configuration.
      *
      * @var array{

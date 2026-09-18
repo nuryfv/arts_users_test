@@ -3,16 +3,27 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
-export default defineConfig(({ command }) => ({
-  plugins: [react(), tailwindcss()],
-  build: {
-    // El build va directo a la carpeta publica del backend, que es lo que
-    // sirve Herd en http://artistshot-test.test
-    outDir: resolve(import.meta.dirname, '../backend/public/app'),
-    emptyOutDir: true,
-  },
-  // Compilado, la app vive en /app del dominio del backend; en desarrollo
-  // Vite la sirve en la raiz de localhost:5173.
-  base: command === 'build' ? '/app/' : '/',
-}))
+/**
+ * Dos destinos de compilacion:
+ *
+ *   npm run build          -> dist/ en la raiz del dominio. Es lo que
+ *                             despliega Vercel.
+ *   npm run build:backend  -> backend/public/app, para servir la interfaz
+ *                             desde el propio CodeIgniter (origen unico).
+ *
+ * @see https://vite.dev/config/
+ */
+export default defineConfig(({ mode }) => {
+  const paraBackend = mode === 'backend'
+
+  return {
+    plugins: [react(), tailwindcss()],
+    build: paraBackend
+      ? {
+          outDir: resolve(import.meta.dirname, '../backend/public/app'),
+          emptyOutDir: true,
+        }
+      : {},
+    base: paraBackend ? '/app/' : '/',
+  }
+})
