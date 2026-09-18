@@ -8,6 +8,11 @@ vendor/
 .env.local
 .env.*.local
 
+# Copias de seguridad de configuracion: llevan credenciales reales.
+.env.*.bak
+*.env.bak
+.env.bak
+
 # Compilado del frontend que sirve el backend.
 # Se regenera con `npm run build` dentro de frontend/
 backend/public/app/
