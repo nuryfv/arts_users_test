@@ -178,29 +178,37 @@ php spark migrate
 php spark db:seed UserSeeder
 ```
 
-### API (Render o Railway)
+### API (Render)
 
-El backend incluye `Dockerfile`, así que ambos proveedores sirven sin cambios:
-se crea un servicio de tipo Docker apuntando al directorio `backend` de este
-repositorio.
+La raíz del repositorio incluye `render.yaml`, así que el servicio se crea
+desde un *Blueprint*: en Render, **New > Blueprint** y seleccionar este
+repositorio. El resto (imagen Docker, contexto, comprobación de salud en
+`/api/health`) ya viene definido.
 
-Variables de entorno del servicio:
+Render pedirá las variables marcadas como secretas:
 
 | Variable | Valor |
 |---|---|
-| `CI_ENVIRONMENT` | `production` |
-| `app.baseURL` | la URL pública que asigne el proveedor |
+| `database.default.hostname` | host del *Session pooler* de Supabase |
+| `database.default.username` | `postgres.<referencia-del-proyecto>` |
+| `database.default.password` | la contraseña de la base |
 | `cors.allowedOrigins` | el dominio de Vercel, p. ej. `https://arts-users-test.vercel.app` |
-| `database.default.*` | los valores de Supabase de la tabla anterior |
-| `RUN_MIGRATIONS` | `true` en el primer despliegue, para crear la tabla |
-| `RUN_SEED` | `true` solo si quieres cargar los 12 usuarios de ejemplo |
 
-`cors.allowedOrigins` admite varios dominios separados por comas. Si no se
-define, se usan los orígenes de desarrollo de `app/Config/Cors.php`.
+Las demás (`CI_ENVIRONMENT`, driver, puerto, esquema) ya están fijadas en el
+blueprint. `cors.allowedOrigins` admite varios dominios separados por comas; si
+no se define, se usan los orígenes de desarrollo de `app/Config/Cors.php`.
 
-Conviene poner `RUN_MIGRATIONS` y `RUN_SEED` en `false` después del primer
-despliegue: las migraciones ya aplicadas no se repiten, pero así el arranque es
-más rápido.
+Para crear la tabla en el primer despliegue hay que poner `RUN_MIGRATIONS` en
+`true` (y `RUN_SEED` en `true` si quieres los 12 usuarios de ejemplo) y volver
+a desplegar. Conviene devolverlas a `false` después: las migraciones ya
+aplicadas no se repiten, pero así el arranque es más rápido.
+
+> **Plan gratuito de Render:** el servicio se suspende tras unos 15 minutos sin
+> tráfico y la siguiente petición tarda cerca de un minuto en responder
+> mientras el contenedor vuelve a arrancar. La primera carga de la interfaz
+> después de un rato de inactividad parecerá colgada; no es un fallo de la
+> aplicación. El disco también es efímero: `writable/` se vacía en cada
+> despliegue, lo cual no afecta a nada porque solo guarda caché y registros.
 
 ### Interfaz (Vercel)
 

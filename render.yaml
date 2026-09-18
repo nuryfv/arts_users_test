@@ -1,0 +1,50 @@
+# Blueprint de Render para la API de CodeIgniter.
+#
+# En Render: New > Blueprint > seleccionar este repositorio. Las variables
+# marcadas con `sync: false` no se versionan: Render las pide al crear el
+# servicio, que es donde deben ir las credenciales de Supabase.
+services:
+  - type: web
+    name: arts-users-test-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: CI_ENVIRONMENT
+        value: production
+
+      # URL publica del servicio. Si Render asigna un nombre distinto
+      # (porque este ya estuviera ocupado), hay que corregirla aqui.
+      - key: app.baseURL
+        value: https://arts-users-test-api.onrender.com/
+
+      # Dominios autorizados a consumir la API desde el navegador.
+      # Aqui va la URL que asigne Vercel; admite varias separadas por comas.
+      - key: cors.allowedOrigins
+        sync: false
+
+      # Conexion a Supabase (Project Settings > Database > Session pooler).
+      - key: database.default.hostname
+        sync: false
+      - key: database.default.database
+        value: postgres
+      - key: database.default.username
+        sync: false
+      - key: database.default.password
+        sync: false
+      - key: database.default.DBDriver
+        value: Postgre
+      - key: database.default.port
+        value: "5432"
+      - key: database.default.schema
+        value: public
+
+      # Poner en true en el primer despliegue para crear la tabla, y
+      # devolverlas a false despues.
+      - key: RUN_MIGRATIONS
+        value: "false"
+      - key: RUN_SEED
+        value: "false"
