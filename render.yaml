@@ -5,10 +5,13 @@
 # servicio, que es donde deben ir las credenciales de Supabase.
 services:
   - type: web
-    name: arts-users-test-api
+    name: arts-users-test
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    # Todo el servicio se construye desde backend/: el Dockerfile y el
+    # contexto de copiado quedan dentro de esa carpeta, que es lo que
+    # esperan las instrucciones COPY de la imagen.
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     healthCheckPath: /api/health
@@ -19,7 +22,7 @@ services:
       # URL publica del servicio. Si Render asigna un nombre distinto
       # (porque este ya estuviera ocupado), hay que corregirla aqui.
       - key: app.baseURL
-        value: https://arts-users-test-api.onrender.com/
+        value: https://arts-users-test.onrender.com/
 
       # Dominios autorizados a consumir la API desde el navegador.
       # Aqui va la URL que asigne Vercel; admite varias separadas por comas.
