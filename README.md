@@ -245,11 +245,30 @@ Al importar el repositorio hay que indicar:
 
 - **Root Directory**: `frontend`
 - **Framework Preset**: Vite (lo detecta solo)
-- **Variable de entorno**: `VITE_API_URL` con la URL pública de la API más
-  `/api`, por ejemplo `https://arts-users-test.onrender.com/api`
 
-Esa variable se lee en tiempo de compilación, así que **hay que volver a
-desplegar** en Vercel cada vez que cambie.
+No hace falta definir `VITE_API_URL`. `frontend/vercel.json` reenvía todo lo
+que llegue a `/api` hacia el backend de Render, de modo que el navegador
+siempre habla con un único dominio:
+
+```json
+{ "source": "/api/:ruta*", "destination": "https://<servicio>.onrender.com/api/:ruta*" }
+```
+
+Esto tiene dos ventajas: **CORS deja de intervenir** (no hay cruce de
+orígenes) y la URL del backend vive en un archivo versionado en vez de en una
+variable del panel. Si cambia el dominio de Render, hay que actualizar ese
+`destination`.
+
+El orden de los `rewrites` importa: la regla de `/api` va **antes** que la
+que redirige todo a `index.html`. Al revés, las llamadas a la API devolverían
+la página HTML con un código 200, y la aplicación fallaría al interpretar esa
+respuesta como JSON.
+
+Si prefieres que el navegador llame directamente a Render en lugar de pasar
+por el proxy, define `VITE_API_URL` con la URL completa de la API
+(`https://<servicio>.onrender.com/api`) y añade el dominio de Vercel a
+`cors_allowedOrigins` en Render. Esa variable se lee **al compilar**, así que
+hay que volver a desplegar en Vercel cada vez que cambie.
 
 ### Orden recomendado
 
