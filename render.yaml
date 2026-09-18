@@ -26,7 +26,14 @@ services:
       - key: cors.allowedOrigins
         sync: false
 
-      # Conexion a Supabase (Project Settings > Database > Session pooler).
+      # Conexion a Supabase.
+      #
+      # IMPORTANTE: hay que usar el host del *Session pooler*
+      # (aws-0-<region>.pooler.supabase.com), no el de la conexion directa
+      # (db.<ref>.supabase.co). El host directo solo publica registro IPv6 y
+      # falla con "Name or service not known" en cualquier red sin IPv6.
+      # El usuario del pooler lleva el sufijo del proyecto:
+      # postgres.<referencia-del-proyecto>
       - key: database.default.hostname
         sync: false
       - key: database.default.database
@@ -41,6 +48,11 @@ services:
         value: "5432"
       - key: database.default.schema
         value: public
+
+      # PostgreSQL rechaza utf8mb4, que es el valor por defecto pensado
+      # para MySQL.
+      - key: database.default.charset
+        value: UTF8
 
       # Poner en true en el primer despliegue para crear la tabla, y
       # devolverlas a false despues.

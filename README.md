@@ -158,8 +158,8 @@ datos en Supabase**. Vercel no ejecuta PHP, por eso el backend va aparte.
 ### Base de datos (Supabase)
 
 Supabase es PostgreSQL, así que el backend se conecta con el driver `Postgre`.
-En el panel de Supabase, la cadena de conexión está en *Project Settings >
-Database*. Con el *Session pooler* los valores son de esta forma:
+En el panel de Supabase, la cadena de conexión está en *Connect > Connection
+string*. Hay que tomar la del **Session pooler**, no la de conexión directa:
 
 ```ini
 database.default.hostname = aws-0-<region>.pooler.supabase.com
@@ -169,7 +169,24 @@ database.default.password = <tu-contraseña>
 database.default.DBDriver = Postgre
 database.default.port     = 5432
 database.default.schema   = public
+database.default.charset  = UTF8
 ```
+
+Dos detalles que hacen fallar la conexión si se pasan por alto:
+
+- **El host directo (`db.<ref>.supabase.co`) solo publica registro IPv6.** En
+  una red sin IPv6 no resuelve y el error es `could not translate host name
+  ... Name or service not known`, que parece un fallo de DNS pero es falta de
+  IPv4. El pooler sí responde por IPv4, y su usuario lleva el sufijo del
+  proyecto: `postgres.<referencia>`.
+- **`charset` debe ser `UTF8`.** El valor por defecto de CodeIgniter es
+  `utf8mb4`, propio de MySQL, y PostgreSQL lo rechaza con
+  `invalid value for parameter "client_encoding"`.
+
+La tabla se crea en el esquema `public`. Supabase ya tiene una tabla `users`
+propia en el esquema `auth` para su sistema de autenticación: son distintas y
+no se interfieren, pero conviene saberlo porque algún comando de CodeIgniter
+(como `spark db:table users`) puede mostrar la de `auth` en su lugar.
 
 Las migraciones se aplican igual que en local:
 
