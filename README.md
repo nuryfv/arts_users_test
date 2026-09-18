@@ -7,6 +7,13 @@ backend/    CodeIgniter 4.7 — API REST, migraciones, seeders y pruebas
 frontend/   Vite + React 19 + TypeScript — interfaz que consume la API
 ```
 
+**Aplicación en funcionamiento:** https://frontend-mu-eight-lp1gcli032.vercel.app
+
+> Si vienes a revisar el proyecto, empieza por la
+> **[guía de revisión](REVISION.md)**: reúne los enlaces, un recorrido por la
+> aplicación, cómo probar la API desde la terminal y dónde está cada requisito.
+> Este README cubre la instalación y el despliegue en detalle.
+
 ## Requisitos
 
 - PHP 8.1 o superior con las extensiones `intl`, `mbstring`, `json` y `curl`
