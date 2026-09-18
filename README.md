@@ -206,13 +206,25 @@ Render pedirá las variables marcadas como secretas:
 
 | Variable | Valor |
 |---|---|
-| `database.default.hostname` | host del *Session pooler* de Supabase |
-| `database.default.username` | `postgres.<referencia-del-proyecto>` |
-| `database.default.password` | la contraseña de la base |
-| `cors.allowedOrigins` | el dominio de Vercel, p. ej. `https://arts-users-test.vercel.app` |
+| `database_default_hostname` | host del *Session pooler* de Supabase |
+| `database_default_username` | `postgres.<referencia-del-proyecto>` |
+| `database_default_password` | la contraseña de la base |
+| `cors_allowedOrigins` | el dominio de Vercel, p. ej. `https://arts-users-test.vercel.app` |
+
+**Los nombres van con guion bajo, no con punto.** En el archivo `.env` local se
+escriben como `database.default.hostname`, pero el panel de Render no admite
+puntos en los nombres de variables. CodeIgniter reconoce las dos formas
+(`BaseConfig::getEnvValue` prueba ambas), así que basta con sustituir los
+puntos por guiones bajos: `database.default.hostname` pasa a ser
+`database_default_hostname`, y `app.baseURL` a `app_baseURL`.
+
+Si se usan puntos, no fallará de forma visible: la aplicación arrancará
+igualmente y usará los valores por defecto de `app/Config/Database.php`, que
+apuntan a MySQL. El síntoma es un error de driver `mysqli` no disponible, que
+despista bastante porque no menciona las variables.
 
 Las demás (`CI_ENVIRONMENT`, driver, puerto, esquema) ya están fijadas en el
-blueprint. `cors.allowedOrigins` admite varios dominios separados por comas; si
+blueprint. `cors_allowedOrigins` admite varios dominios separados por comas; si
 no se define, se usan los orígenes de desarrollo de `app/Config/Cors.php`.
 
 Para crear la tabla en el primer despliegue hay que poner `RUN_MIGRATIONS` en

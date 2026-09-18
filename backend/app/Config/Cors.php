@@ -21,7 +21,10 @@ class Cors extends BaseConfig
     {
         parent::__construct();
 
-        $origenes = env('cors.allowedOrigins');
+        // Algunos paneles (Render entre ellos) no admiten puntos en los
+        // nombres de las variables, asi que se acepta tambien la forma
+        // con guion bajo.
+        $origenes = env('cors.allowedOrigins') ?: env('cors_allowedOrigins');
 
         if (is_string($origenes) && trim($origenes) !== '') {
             $this->default['allowedOrigins'] = array_values(array_filter(

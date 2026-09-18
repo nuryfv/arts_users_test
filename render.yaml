@@ -21,12 +21,12 @@ services:
 
       # URL publica del servicio. Si Render asigna un nombre distinto
       # (porque este ya estuviera ocupado), hay que corregirla aqui.
-      - key: app.baseURL
+      - key: app_baseURL
         value: https://arts-users-test.onrender.com/
 
       # Dominios autorizados a consumir la API desde el navegador.
       # Aqui va la URL que asigne Vercel; admite varias separadas por comas.
-      - key: cors.allowedOrigins
+      - key: cors_allowedOrigins
         sync: false
 
       # Conexion a Supabase.
@@ -37,24 +37,24 @@ services:
       # falla con "Name or service not known" en cualquier red sin IPv6.
       # El usuario del pooler lleva el sufijo del proyecto:
       # postgres.<referencia-del-proyecto>
-      - key: database.default.hostname
+      - key: database_default_hostname
         sync: false
-      - key: database.default.database
+      - key: database_default_database
         value: postgres
-      - key: database.default.username
+      - key: database_default_username
         sync: false
-      - key: database.default.password
+      - key: database_default_password
         sync: false
-      - key: database.default.DBDriver
+      - key: database_default_DBDriver
         value: Postgre
-      - key: database.default.port
+      - key: database_default_port
         value: "5432"
-      - key: database.default.schema
+      - key: database_default_schema
         value: public
 
       # PostgreSQL rechaza utf8mb4, que es el valor por defecto pensado
       # para MySQL.
-      - key: database.default.charset
+      - key: database_default_charset
         value: UTF8
 
       # Poner en true en el primer despliegue para crear la tabla, y
